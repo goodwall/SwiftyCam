@@ -57,6 +57,14 @@ open class SwiftyCamButton: UIButton {
     // Sets whether button is enabled
     
     public var buttonEnabled = true
+ 
+    // Sets whether longPress is enabled
+
+    public var longPressEnabled = true
+
+    // Sets whether tap is enabled
+
+    public var tapEnabled = true
     
     /// Maximum duration variable
     
@@ -83,6 +91,10 @@ open class SwiftyCamButton: UIButton {
         guard buttonEnabled == true else {
             return
         }
+     
+        guard tapEnabled == true else {
+            return
+        }
         
        delegate?.buttonWasTapped()
     }
@@ -90,6 +102,10 @@ open class SwiftyCamButton: UIButton {
     /// UILongPressGestureRecognizer Function
     @objc fileprivate func LongPress(_ sender:UILongPressGestureRecognizer!)  {
         guard buttonEnabled == true else {
+            return
+        }
+     
+        guard longPressEnabled == true else {
             return
         }
         
