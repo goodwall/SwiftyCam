@@ -130,6 +130,15 @@ public protocol SwiftyCamViewControllerDelegate: class {
      */
     
     func swiftyCamNotAuthorized(_ swiftyCam: SwiftyCamViewController)
+
+    /**
+     SwiftyCamViewControllerDelegate function called when SwiftyCamViewController ask acces to cameta
+
+     - Parameter swiftyCam: Current SwiftyCamViewController
+     - Parameter granted: 'true' if access is granted, otherwise 'false'
+     */
+
+    func swiftyCam(_ swiftyCam: SwiftyCamViewController, didGrantCameraAccess granted: Bool)
 }
 
 public extension SwiftyCamViewControllerDelegate {
@@ -184,6 +193,10 @@ public extension SwiftyCamViewControllerDelegate {
     }
     
     func swiftyCamNotAuthorized(_ swiftyCam: SwiftyCamViewController) {
+        // Optional
+    }
+
+    func swiftyCam(_ swiftyCam: SwiftyCamViewController, didGrantCameraAccess granted: Bool) {
         // Optional
     }
 }

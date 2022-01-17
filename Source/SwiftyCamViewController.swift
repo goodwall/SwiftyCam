@@ -326,6 +326,8 @@ open class SwiftyCamViewController: UIViewController {
 			// not yet determined
 			sessionQueue.suspend()
 			AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { [unowned self] granted in
+                self.cameraDelegate?.swiftyCam(self, didGrantCameraAccess: granted)
+
 				if !granted {
 					self.setupResult = .notAuthorized
 				}
