@@ -142,6 +142,10 @@ open class SwiftyCamViewController: UIViewController {
 
 	public var maxZoomScale				         = CGFloat.greatestFiniteMagnitude
 
+    /// Set the delay before requesting permission
+
+    public var permissionDelay: Double           = 0.0
+
 	/// Sets whether Tap to Focus and Tap to Adjust Exposure is enabled for the capture session
 
 	public var tapToFocus                        = true
@@ -323,16 +327,22 @@ open class SwiftyCamViewController: UIViewController {
 			break
 		case .notDetermined:
 
-			// not yet determined
-			sessionQueue.suspend()
-			AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { [unowned self] granted in
-                self.cameraDelegate?.swiftyCam(self, didGrantCameraAccess: granted)
+            // not yet determined
+            sessionQueue.suspend()
 
-				if !granted {
-					self.setupResult = .notAuthorized
-				}
-				self.sessionQueue.resume()
-			})
+            if self.permissionDelay > 0 {
+                // Request will be asked later
+            } else {
+                AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { [unowned self] granted in
+                    self.cameraDelegate?.swiftyCam(self, didGrantCameraAccess: granted)
+
+                    if !granted {
+                        self.setupResult = .notAuthorized
+                    }
+                    self.sessionQueue.resume()
+                })
+            }
+
 		default:
 
 			// already been asked. Denied access
@@ -404,6 +414,23 @@ open class SwiftyCamViewController: UIViewController {
         super.viewWillAppear(animated)
         NotificationCenter.default.addObserver(self, selector: #selector(captureSessionDidStartRunning), name: .AVCaptureSessionDidStartRunning, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(captureSessionDidStopRunning),  name: .AVCaptureSessionDidStopRunning,  object: nil)
+
+        if self.permissionDelay > 0 && AVCaptureDevice.authorizationStatus(for: AVMediaType.video) == .notDetermined {
+            NSObject.cancelPreviousPerformRequests(withTarget: self)
+            self.perform(#selector(requestPermission), with: nil, afterDelay: self.permissionDelay)
+        }
+    }
+
+    @objc private func requestPermission() {
+        NSObject.cancelPreviousPerformRequests(withTarget: self)
+        AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { [unowned self] granted in
+            self.cameraDelegate?.swiftyCam(self, didGrantCameraAccess: granted)
+
+            if !granted {
+                self.setupResult = .notAuthorized
+            }
+            self.sessionQueue.resume()
+        })
     }
 
 	// MARK: ViewDidAppear
@@ -450,6 +477,11 @@ open class SwiftyCamViewController: UIViewController {
 	}
 
 	// MARK: ViewDidDisappear
+
+    override open func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        NSObject.cancelPreviousPerformRequests(withTarget: self)
+    }
 
 	/// ViewDidDisappear(_ animated:) Implementation
 
